@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Alamofire
 import Foundation
 
 
@@ -42,12 +41,31 @@ class HomeViewController: UIViewController {
     
     func getProducts() {
         
-        AF.request("https://fakestoreapi.com/products").responseDecodable(of: ProductResponse.self) { response in
-            
-            self.productList = response.value!
-            //print(self.productList.count)
-            self.collectionView.reloadData()
-        }
+//        AF.request("https://fakestoreapi.com/products").responseDecodable(of: ProductResponse.self) { response in
+//
+//            self.productList = response.value!
+//            //print(self.productList.count)
+//            self.collectionView.reloadData()
+//        }
+        
+        var request = URLRequest(url: URL(string: "https://fakestoreapi.com/products")!)
+        request.httpMethod = "GET"
+
+        URLSession.shared.dataTask(with: request, completionHandler: { data, response, error -> Void in
+            do {
+                let jsonDecoder = JSONDecoder()
+                let responseModel = try jsonDecoder.decode(ProductResponse.self, from: data!)
+                //print(responseModel)
+                
+                self.productList = responseModel
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                }
+                
+            } catch {
+                print("JSON Serialization error")
+            }
+        }).resume()
     }
     /*
     // MARK: - Navigation
